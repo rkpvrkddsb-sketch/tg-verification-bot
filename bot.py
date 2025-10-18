@@ -4,7 +4,7 @@ import telebot
 TOKEN = os.environ.get("7738954223:AAGxiZQM5S11Fl-PQim0Fvuk2HcBfhnScTQ")
 CHANNEL_ID = os.environ.get("1335337196")
 
-bot = telebot.TeleBot(TOKEN)
+bot = telebot.TeleBot(7738954223:AAGxiZQM5S11Fl-PQim0Fvuk2HcBfhnScTQ)
 
 @bot.message_handler(commands=['start'])
 def start(message):
