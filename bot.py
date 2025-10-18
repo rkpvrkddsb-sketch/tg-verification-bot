@@ -1,14 +1,22 @@
 # bot.py
+import os
 import telebot
 
-# 🔹 ВСТАВ СВІЙ ТОКЕН від BotFather сюди
-BOT_TOKEN = "7738954223:AAGxiZQM5S11Fl-PQim0Fvuk2HcBfhnScTQ
-"
+# 🔹 Беремо токен та ID каналу зі змінних середовища
+BOT_TOKEN = os.environ.get("BOT_TOKEN")
+CHANNEL_ID = os.environ.get("CHANNEL_ID")
 
-# 🔹 ВСТАВ АЙДІ СВОГО КАНАЛУ сюди
-# приватний канал: -100XXXXXXXXXXXX
-# публічний канал: "@назва_каналу"
-CHANNEL_ID = -1003198292422
+# Перевірка наявності токена та каналу
+if not BOT_TOKEN or not CHANNEL_ID:
+    print("❌ BOT_TOKEN або CHANNEL_ID не знайдено. Додай їх у Environment Variables!")
+    exit(1)
+
+# Перетворюємо CHANNEL_ID на int, якщо це приватний канал
+try:
+    CHANNEL_ID = int(CHANNEL_ID)
+except ValueError:
+    # залишаємо як рядок для @username публічного каналу
+    pass
 
 # Створюємо об'єкт бота
 bot = telebot.TeleBot(BOT_TOKEN)
