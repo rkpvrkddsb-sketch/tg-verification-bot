@@ -1,27 +1,29 @@
-# bot.py
+from flask import Flask
 import os
 import telebot
+import threading
 
-# 🔹 Беремо токен та ID каналу зі змінних середовища
-BOT_TOKEN = os.environ.get("BOT_TOKEN")
-CHANNEL_ID = os.environ.get("CHANNEL_ID")
+# ===============================
+# 🔹 Змінні середовища
+BOT_TOKEN = os.environ.get("7738954223:AAGxiZQM5S11Fl-PQim0Fvuk2HcBfhnScTQ")
+CHANNEL_ID = os.environ.get("-1003198292422")
 
-# Перевірка наявності токена та каналу
 if not BOT_TOKEN or not CHANNEL_ID:
-    print("❌ BOT_TOKEN або CHANNEL_ID не знайдено. Додай їх у Environment Variables!")
+    print("❌ BOT_TOKEN або CHANNEL_ID не знайдено!")
     exit(1)
 
-# Перетворюємо CHANNEL_ID на int, якщо це приватний канал
+# Пробуємо перетворити CHANNEL_ID на int (для приватного каналу)
 try:
     CHANNEL_ID = int(CHANNEL_ID)
 except ValueError:
-    # залишаємо як рядок для @username публічного каналу
-    pass
+    pass  # залишаємо як рядок для @username публічного каналу
 
-# Створюємо об'єкт бота
+# ===============================
+# 🔹 Створюємо бота
 bot = telebot.TeleBot(BOT_TOKEN)
 
-# Команда /start
+# ===============================
+# 🔹 Код бота (кнопка "Я человек")
 @bot.message_handler(commands=['start'])
 def start(message):
     markup = telebot.types.InlineKeyboardMarkup()
@@ -31,20 +33,36 @@ def start(message):
                      "Пожалуйста, подтвердите, что вы человек 👇",
                      reply_markup=markup)
 
-# Обробка натискання кнопки
 @bot.callback_query_handler(func=lambda call: call.data == "human")
 def confirm(call):
     try:
-        # Створюємо одноразове посилання для входу в канал
         invite = bot.create_chat_invite_link(chat_id=CHANNEL_ID, member_limit=1)
         link = invite.invite_link if hasattr(invite, "invite_link") else invite["invite_link"]
         bot.send_message(call.message.chat.id,
-                         f"✅ Проверка пройдена!\nВот ссылка для входа в канал:\n{link}")
+                         f"✅ Проверка пройдена!\nВот ссылка на канал:\n{link}")
         bot.answer_callback_query(call.id, "Вы подтверждены как человек!")
     except Exception as e:
         bot.send_message(call.message.chat.id,
                          "⚠️ Ошибка при создании ссылки. Сообщите админу.")
         print("Ошибка при создании invite link:", e)
 
-# Запуск бота
-bot.polling(non_stop=True)
+# ===============================
+# 🔹 Flask для порту
+app = Flask(__name__)
+
+@app.route("/")
+def index():
+    return "Bot is running!"
+
+# ===============================
+# 🔹 Запускаємо polling у фоні
+def run_bot():
+    bot.polling(non_stop=True)
+
+threading.Thread(target=run_bot).start()
+
+# ===============================
+# 🔹 Запускаємо Flask
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
